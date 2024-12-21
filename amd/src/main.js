@@ -1,4 +1,4 @@
-/* eslint-disable complexity */
+
 
 // This file is part of Moodle - http://moodle.org/
 //
@@ -58,7 +58,7 @@ export default class InlineAnnotation extends Base {
         videoWrapper.append(`<div id="canvas" data-id="${annotation.id}"
              class="message text-white bg-transparent inlineannotation position-absolute"></div>`);
 
-        const updateAspectRatio = async (video, reset) => {
+        const updateAspectRatio = async(video, reset) => {
             let elem = video ? $('#player') : $(`#canvas[data-id='${annotation.id}']`);
             if ($("#wrapper").hasClass('fullscreen')) {
                 let ratio = 16 / 9;
@@ -66,19 +66,22 @@ export default class InlineAnnotation extends Base {
                     ratio = this.player.aspectratio;
                 }
                 let videowrapperaspect = videoWrapper.width() / videoWrapper.height();
-                let gap = '- 55px';
-                if ($("#wrapper").hasClass('no-videonav')) {
-                    gap = '';
-                }
+                const videowrapperwidth = videoWrapper.width();
+                const videowrapperheight = videoWrapper.height();
+                // Screen is wider than the video.
                 if (videowrapperaspect > ratio) {
-                    elem.css('height', `calc(100dvh ${gap})`);
-                    elem.css('width', `calc((100dvh ${gap}) * ${ratio})`);
+                    let height = videowrapperheight;
+                    let width = height * ratio;
+                    elem.css('height', height + 'px');
+                    elem.css('width', width + 'px');
                     elem.css('top', '0');
-                    elem.css('left', `calc((100dvw - (100dvh ${gap}) * ${ratio}) / 2)`);
+                    elem.css('left', (videowrapperwidth - width) / 2 + 'px');
                 } else if (videowrapperaspect < ratio) {
-                    elem.css('width', '100dvw');
-                    elem.css('height', `${100 / ratio}dvw`);
-                    elem.css('top', `calc((100dvh ${gap} - 100dvw / ${ratio}) / 2)`);
+                    let width = videowrapperwidth;
+                    let height = width / ratio;
+                    elem.css('width', width + 'px');
+                    elem.css('height', height + 'px');
+                    elem.css('top', ((videowrapperheight - height) / 2) + 'px');
                     elem.css('left', '0');
                 }
             } else {
