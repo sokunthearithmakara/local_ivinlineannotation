@@ -1233,6 +1233,7 @@ export default class InlineAnnotation extends Base {
                 } else {
                     $(`#inlineannotation-btns`).remove();
                     $('#canvas[data-id="' + annotation.id + '"]').remove();
+                    $('#content-region, #timeline-wrapper').removeClass('no-pointer-events');
                 }
             });
 
@@ -1833,6 +1834,8 @@ export default class InlineAnnotation extends Base {
         this.renderContainer(annotation);
         if (this.isEditMode()) {
             annotation.editmode = true; // Use editmode to render the draft content (i.e draft.php vs plugin.php).
+            // Disable the content-region and the timeline-wrapper.
+            $('#content-region, #timeline-wrapper').addClass('no-pointer-events');
         }
         const content = await this.render(annotation, 'json');
         this.postContentRender(annotation, content);

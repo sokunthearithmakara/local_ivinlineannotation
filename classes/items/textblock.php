@@ -172,9 +172,9 @@ class textblock extends \core_form\dynamic_form {
             $mform->addElement('hidden', 'textfont', '');
         } else {
             // Add default font.
-            array_unshift($availablefonts, [get_string('defaultfont', 'ivplugin_annotation'), '']);
+            array_unshift($availablefonts, [get_string('defaultfont', 'local_ivinlineannotation'), '']);
             $availablefonts = array_column($availablefonts, 0, 1);
-            $mform->addElement('select', 'textfont', get_string('textfont', 'ivplugin_annotation'), $availablefonts);
+            $mform->addElement('select', 'textfont', get_string('textfont', 'local_ivinlineannotation'), $availablefonts);
         }
         $mform->setType('textfont', PARAM_TEXT);
 
