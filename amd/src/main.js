@@ -1830,6 +1830,7 @@ export default class InlineAnnotation extends Base {
      * @returns {void}
      */
     async runInteraction(annotation) {
+        let self = this;
         await this.player.pause();
         this.renderContainer(annotation);
         if (this.isEditMode()) {
@@ -1837,7 +1838,11 @@ export default class InlineAnnotation extends Base {
             // Disable the content-region and the timeline-wrapper.
             $('#content-region, #timeline-wrapper').addClass('no-pointer-events');
         }
-        const content = await this.render(annotation, 'json');
+        // We don't need to run the render method every time the content is applied. We can cache the content.
+        if (!self.cache[annotation.id] || self.isEditMode()) {
+            self.cache[annotation.id] = await self.render(annotation, 'json');
+        }
+        let content = self.cache[annotation.id];
         this.postContentRender(annotation, content);
     }
 }
