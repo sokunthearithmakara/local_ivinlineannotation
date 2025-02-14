@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 
 
 // This file is part of Moodle - http://moodle.org/
@@ -24,7 +25,6 @@
  */
 import $ from 'jquery';
 import Base from 'mod_interactivevideo/type/base';
-import {dispatchEvent} from 'core/event_dispatcher';
 import ModalForm from 'core_form/modalform';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
@@ -115,6 +115,85 @@ export default class InlineAnnotation extends Base {
     }
 
     /**
+     * Util function to input the timestamp on the modal form.
+     * @param {Object} options The options
+     * @returns {void}
+     * */
+    timepicker(options) {
+        // Normalize the options.
+        options = options || {};
+        options.modal = options.modal || true;
+        options.disablelist = options.disablelist || false;
+        options.required = options.required || false;
+        let self = this;
+        $(document).off('click', '#confirmtime');
+        // Pick a time button.
+        $(document).off('click', `.pickatime button`).on('click', `.pickatime button`, async function(e) {
+            e.preventDefault();
+            const $this = $(this);
+            const currenttime = await self.player.getCurrentTime();
+            const field = $(this).data('field');
+            const fieldval = $(`[name=${field}]`).val();
+            if (fieldval) {
+                const parts = fieldval.split(':');
+                const time = Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
+                await self.player.seek(time); // Go to the time.
+            }
+            // Hide this modal.
+            if (options.modal) {
+                $this.closest('.modal').addClass('d-none');
+                $('.modal-backdrop').addClass('d-none');
+            }
+            if (options.disablelist) {
+                $('#annotationwrapper').addClass('no-pointer-events');
+            }
+            $('#timeline-btns .col:first-child').hide().before(`<div class="col confirmtime-wrapper
+                    d-flex justify-content-start align-items-center
+                         "><button class="btn btn-circle pulse btn-primary" id="confirmtime"
+                         title="${M.util.get_string('confirmtime', 'ivplugin_contentbank')}">
+                         <i class="fa fa-check"></i></button></div>`);
+            $('#timeline-wrapper').removeClass('no-pointer-events');
+            // Hide the annotation-wrapper.
+            $('#canvas .annotation-wrapper').css('visibility', 'hidden');
+
+            $(document).on('click', '#confirmtime', async function(e) {
+                e.preventDefault();
+                // Show the modal.
+                if (options.modal) {
+                    $this.closest('.modal').removeClass('d-none');
+                    $('.modal-backdrop').removeClass('d-none');
+                }
+                if (options.disablelist) {
+                    $('#annotationwrapper').removeClass('no-pointer-events');
+                }
+                // Remove the button.
+                // Put the time in the input.
+                const time = await self.player.getCurrentTime();
+                const formattedTime = self.convertSecondsToHMS(time, false, true);
+                $(`[name=${field}]`).val(formattedTime);
+                $(this).closest('div').remove();
+                $('#timeline-btns .col:first-child').show();
+                // Go back to the current time.
+                self.player.seek(currenttime);
+                $('#timeline-wrapper').addClass('no-pointer-events');
+                self.player.pause();
+                $('#canvas .annotation-wrapper').css('visibility', 'visible');
+            });
+        });
+
+        // Reset time button.
+        $(document).off('click', `.resettime button`).on('click', `.resettime button`, function(e) {
+            e.preventDefault();
+            const field = $(this).data('field');
+            $(`[name=${field}]`).val('');
+            if (options.required) {
+                $(`[name=${field}]`).val(self.convertSecondsToHMS(self.start, false, true));
+            }
+        });
+
+    }
+
+    /**
      * Post-processes the content after rendering an annotation.
      * @param {Object} annotation The annotation object.
      * @param {Object} data The data object.
@@ -125,7 +204,7 @@ export default class InlineAnnotation extends Base {
         let $videoWrapper = $('#video-wrapper');
         let $playerWrapper = $('#wrapper');
         let draftStatus = null;
-
+        let seeking = false;
         /**
          * Format seconds to HH:MM:SS
          * @param {Number} seconds seconds
@@ -214,24 +293,26 @@ export default class InlineAnnotation extends Base {
 
         const renderImage = (wrapper, item, prop, id, position) => {
             const parts = prop.timestamp.split(':');
-            const timestamp = Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
+            const timestamp = parts.length > 0 ? Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]) : -1;
             if (prop.gotourl != '') {
                 wrapper.append(`<a href="${prop.gotourl}" target="_blank"><img src="${prop.url}" id="${id}"
                              class="annotation-content w-100 ${prop.shadow == '1' ? 'shadow' : ''}"
                              ${prop.rounded == 1 ? 'style="border-radius:1em;"' : ''} alt="${prop.formattedalttext}"/></a>`);
             } else {
                 wrapper.append(`<img src="${prop.url}" id="${id}"
-                                 ${timestamp > 0 ? ' data-timestamp="' + timestamp + '"' : ''}
                                   class="annotation-content w-100 ${prop.shadow == '1' ? 'shadow' : ''}
-                                  ${timestamp > 0 ? 'cursor-pointer' : ''}"
+                                  ${timestamp >= 0 ? 'cursor-pointer' : ''}"
                                    ${prop.rounded == 1 ? 'style="border-radius:1em;"' : ''} alt="${prop.formattedalttext}"/>`);
             }
             if (!self.isEditMode()) {
-                if (prop.gotourl == '' && timestamp == 0) {
+                if (prop.gotourl == '' && timestamp < 0) {
                     wrapper.removeClass('resizable');
                     wrapper.addClass('no-pointer');
                 } else {
                     wrapper.addClass('clickable');
+                    if (timestamp >= 0) {
+                        wrapper.attr('data-timestamp', timestamp);
+                    }
                 }
             }
             wrapper.css(position);
@@ -339,11 +420,11 @@ export default class InlineAnnotation extends Base {
             const timestamp = Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
 
             wrapper.append(`<div class="d-flex h-100"><span id="${id}" tabindex="0" class="btn ${prop.style} ${prop.rounded == '1' ?
-                'btn-rounded' : 'rounded-0'} annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''}"
-                data-timestamp="${timestamp}">${prop.formattedlabel}</span></div>`);
+                'btn-rounded' : 'rounded-0'} annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''}">
+                ${prop.formattedlabel}</span></div>`);
 
             position.width = 0;
-
+            wrapper.attr('data-timestamp', timestamp);
             wrapper.css(position);
             $videoWrapper.find(`#canvas`).append(wrapper);
             recalculatingTextSize(wrapper, true);
@@ -427,6 +508,8 @@ export default class InlineAnnotation extends Base {
         };
 
         const renderTextblock = (wrapper, item, prop, id, position) => {
+            const parts = prop.timestamp.split(':');
+            const timestamp = parts.length > 0 ? Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]) : -1;
             const textparts = prop.formattedlabel.split('\r\n');
             let textblock = '<div class="d-flex flex-column">';
             textparts.forEach((part) => {
@@ -434,7 +517,7 @@ export default class InlineAnnotation extends Base {
                     return;
                 }
                 textblock += `<span class="text-row text-nowrap text-${prop.alignment}"
-                                 style="font-family: ${prop.textfont != '' ? prop.textfont : 'inherit'}">${part}</span>`;
+                                 style='font-family: ${prop.textfont != '' ? prop.textfont : 'inherit'}'>${part}</span>`;
             });
             textblock += '</div>';
             if (prop.url != undefined && prop.url != '') {
@@ -462,6 +545,10 @@ export default class InlineAnnotation extends Base {
                 'border-color': prop.bordercolor,
                 'border-style': 'solid',
             };
+            if (timestamp >= 0) {
+                wrapper.attr('data-timestamp', timestamp);
+                wrapper.addClass('clickable');
+            }
             wrapper.find('.annotation-content').css(style);
             $videoWrapper.find(`#canvas`).append(wrapper);
             recalculatingTextSize(wrapper, false, true);
@@ -469,7 +556,7 @@ export default class InlineAnnotation extends Base {
 
         const renderShape = (wrapper, item, prop, id, position) => {
             const parts = prop.timestamp.split(':');
-            const timestamp = Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
+            const timestamp = parts.length > 0 ? (Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2])) : -1;
             if (prop.gotourl != '') {
                 wrapper.append(`<a href="${prop.gotourl}" target="_blank"><div id="${id}"
                              class="annotation-content ${prop.shadow == '1' ? 'shadow' : ''}"
@@ -477,16 +564,18 @@ export default class InlineAnnotation extends Base {
                 wrapper.addClass('clickable');
             } else {
                 if (!self.isEditMode()) {
-                    if (timestamp == 0) {
-                        wrapper.addClass('no-pointer');
-                    } else {
+                    if (timestamp >= 0) {
                         wrapper.addClass('clickable');
+                    } else {
+                        wrapper.addClass('no-pointer');
                     }
                 }
                 wrapper.append(`<div id="${id}" class="annotation-content ${prop.shadow == '1' ? 'shadow' : ''}
                                  ${timestamp > 0 ? 'cursor-pointer' : ''}"
-                             ${timestamp > 0 ? 'data-timestamp="' + timestamp + '"' : ''}
                              style="width: 100%; height: 100%;"></div>`);
+            }
+            if (timestamp >= 0) {
+                wrapper.attr('data-timestamp', timestamp);
             }
             wrapper.css(position);
             const style = {
@@ -581,8 +670,26 @@ export default class InlineAnnotation extends Base {
                     let type = item.type;
                     let id = item.id;
                     let position = item.position;
+                    if (!self.isEditMode()) {
+                        const left = position.left.replace('%', '');
+                        const top = position.top.replace('%', '');
+                        const width = position.width.replace('%', '');
+                        const height = position.height ? position.height.replace('%', '') : 0;
+                        if (left < 0.01) {
+                            position.left = '0%';
+                        }
+                        if (top < 0.01) {
+                            position.top = '0%';
+                        }
+                        if (width > 99.5) {
+                            position.width = '100%';
+                        }
+                        if (height > 99.5) {
+                            position.height = '100%';
+                        }
+                    }
                     let wrapper = $(`<div class="annotation-wrapper" data-group="${position.group}" data-anno="${annotation.id}"
-                     data-item="${id}" data-type="${type}" data-property='${JSON.stringify(prop)}'></div>`);
+                     data-item="${id}" data-type="${type}"></div>`);
                     if (prop.resizable == '1' || self.isEditMode()) {
                         wrapper.addClass('resizable');
                         wrapper.attr('tabindex', 0);
@@ -870,15 +977,6 @@ export default class InlineAnnotation extends Base {
                                         video.pause();
                                     }
                                     break;
-                                case 'navigation':
-                                case 'image':
-                                case 'shape':
-                                    var navigation = wrapper.find('.annotation-content');
-                                    if (self.isBetweenStartAndEnd(navigation.data('timestamp'))) {
-                                        self.player.seek(navigation.data('timestamp'));
-                                        self.player.play();
-                                    }
-                                    break;
                                 case 'hotspot':
                                     var viewertype = wrapper.data('toggle');
                                     var hotspotid = wrapper.data('item');
@@ -923,6 +1021,10 @@ export default class InlineAnnotation extends Base {
                                         wrapper.popover('show');
                                     }
                                     break;
+                            }
+                            if ($(this).data('timestamp')) {
+                                self.player.seek($(this).data('timestamp'));
+                                self.player.play();
                             }
                         });
 
@@ -1053,6 +1155,9 @@ export default class InlineAnnotation extends Base {
         }
 
         $(document).one('iv:playerSeek iv:playerPlaying', function(e) {
+            if (seeking) {
+                return;
+            }
             let newTime = e.detail.time;
             if (Math.floor(newTime) != annotation.timestamp) {
                 $(`#inlineannotation-btns`).remove();
@@ -1202,7 +1307,7 @@ export default class InlineAnnotation extends Base {
                     draftStatus = null;
                     tracking = [];
                     $('#inlineannotation-btns #redo, #inlineannotation-btns #undo').attr('disabled', 'disabled');
-                    dispatchEvent('annotationupdated', {
+                    self.dispatchEvent('annotationupdated', {
                         annotation: updated,
                         action: 'edit',
                     });
@@ -1239,7 +1344,11 @@ export default class InlineAnnotation extends Base {
 
         $(document).off('click', `#inlineannotation-btns #hideshow`).on('click', `#inlineannotation-btns #hideshow`, function(e) {
             e.stopImmediatePropagation();
-            $('#canvas[data-id="' + annotation.id + '"]').toggle();
+            if ($(this).find('i').hasClass('bi-eye-slash')) {
+                $('#canvas[data-id="' + annotation.id + '"]').find('.annotation-wrapper').hide();
+            } else {
+                $('#canvas[data-id="' + annotation.id + '"]').find('.annotation-wrapper').show();
+            }
             $(this).find('i').toggleClass('bi-eye bi-eye-slash');
         });
         /**
@@ -1822,6 +1931,14 @@ export default class InlineAnnotation extends Base {
                 return confirmationMessage;
             }
             return true;
+        });
+
+        self.timepicker();
+        $(document).on('click', '.pickatime button', function() {
+            seeking = true;
+        });
+        $(document).on('click', '#confirmtime', async function() {
+            seeking = false;
         });
     }
     /**

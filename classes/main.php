@@ -41,6 +41,7 @@ class main extends \ivplugin_richtext\main {
             'description' => get_string('inlineannotationdescription', 'local_ivinlineannotation'),
             'author' => 'tsmakara',
             'authorlink' => 'mailto:sokunthearithmakara@gmail.com',
+            'tutorial' => get_string('tutorialurl', 'local_ivinlineannotation'),
         ];
     }
 
