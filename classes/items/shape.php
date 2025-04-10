@@ -143,7 +143,7 @@ class shape extends \core_form\dynamic_form {
             'text',
             'bgcolor',
             get_string('bgcolor', 'local_ivinlineannotation') .
-                '<span class="color-picker ml-2" style="background-color: ' .
+                '<span class="color-picker iv-ml-2" style="background-color: ' .
                 $this->optional_param('bgcolor', '#000', PARAM_TEXT) .
                 '"><input type="color"></span>',
             ['size' => 100]
@@ -156,7 +156,7 @@ class shape extends \core_form\dynamic_form {
             'text',
             'bordercolor',
             get_string('bordercolor', 'local_ivinlineannotation') .
-                '<span class="color-picker ml-2" style="background-color: ' .
+                '<span class="color-picker iv-ml-2" style="background-color: ' .
                 $this->optional_param('bordercolor', '#000', PARAM_TEXT) .
                 '"><input type="color"></span>',
             ['size' => 100]

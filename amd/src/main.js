@@ -351,13 +351,13 @@ export default class InlineAnnotation extends Base {
             let wrapperhtml = ``;
             if (type == 'audio') {
                 wrapperhtml = `<span id="${id}" tabindex="0"
-                             class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'rounded-0'}
+                             class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'iv-rounded-0'}
                               annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''} rotatex-360"
                                data-src="${prop.url}"><i class="bi bi-volume-up fs-unset" style="margin-right:0.25em;"></i>
                                <span class="timeremaining">00:00</span></span>`;
             } else if (type == 'file') {
                 wrapperhtml = `<a id="${id}"
-                             class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'rounded-0'}
+                             class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'iv-rounded-0'}
                              annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''} rotatey-180" href="${prop.url}"
                               target="_blank"><i class="bi bi-paperclip fs-unset"></i>${prop.formattedlabel != "" ?
                         `<span style="margin-left:0.25em;">${prop.formattedlabel}` : ''}</a>`;
@@ -420,7 +420,7 @@ export default class InlineAnnotation extends Base {
             const timestamp = Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
 
             wrapper.append(`<div class="d-flex h-100"><span id="${id}" tabindex="0" class="btn ${prop.style} ${prop.rounded == '1' ?
-                'btn-rounded' : 'rounded-0'} annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''}">
+                'btn-rounded' : 'iv-rounded-0'} annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''}">
                 ${prop.formattedlabel}</span></div>`);
 
             position.width = 0;
@@ -433,7 +433,7 @@ export default class InlineAnnotation extends Base {
         const renderStopwatch = (wrapper, item, prop, id, position) => {
             const duration = Number(prop.duration) * 60;
             wrapper.append(`<div class="d-flex h-100"><span id="${id}" tabindex="0"
-                             class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'rounded-0'}
+                             class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'iv-rounded-0'}
                               annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''} rotatey-180"
                                data-duration="${duration}">
                                <i class="bi bi bi-stopwatch fs-unset" style="margin-right:0.25em;"></i>
@@ -516,7 +516,7 @@ export default class InlineAnnotation extends Base {
                 if (part.trim() == '') {
                     return;
                 }
-                textblock += `<span class="text-row text-nowrap text-${prop.alignment}"
+                textblock += `<span class="text-row text-nowrap iv-text-${prop.alignment}"
                                  style='font-family: ${prop.textfont != '' ? prop.textfont : 'inherit'}'>${part}</span>`;
             });
             textblock += '</div>';
@@ -610,21 +610,40 @@ export default class InlineAnnotation extends Base {
 
             if (!self.isEditMode()) {
                 if (prop.usemodal == '1') {
-                    wrapper.attr({
-                        'data-toggle': 'modal',
-                    });
+                    if (self.isBS5) {
+                        wrapper.attr({
+                            'data-bs-toggle': 'modal',
+                        });
+                    } else {
+                        wrapper.attr({
+                            'data-toggle': 'modal',
+                        });
+                    }
                 } else {
-                    wrapper.attr({
+                    let attr = {
                         'tabindex': -1,
-                        'data-trigger': 'manual',
-                        'data-boundary': 'viewport',
-                        'data-placement': 'auto',
-                        'data-html': 'true',
-                        'data-content': '<div class="loader"></div>',
-                        'data-title': prop.formattedtitle
-                            + `<i class="bi bi-x-circle-fill ml-auto popover-dismiss cursor-pointer"
-                                         style="font-size:1.5em;"></i>`,
-                    });
+                    };
+                    if (self.isBS5) {
+                        attr['data-bs-trigger'] = 'manual';
+                        attr['data-bs-boundary'] = 'viewport';
+                        attr['data-bs-placement'] = 'auto';
+                        attr['data-bs-html'] = 'true';
+                        attr['data-bs-content'] = '<div class="loader"></div>';
+                        attr['data-bs-title'] = prop.formattedtitle
+                            + `<i class="bi bi-x-circle-fill iv-ml-auto popover-dismiss cursor-pointer"
+                                     style="font-size:1.5em;"></i>`;
+                    } else {
+                        attr['data-trigger'] = 'manual';
+                        attr['data-boundary'] = 'viewport';
+                        attr['data-placement'] = 'auto';
+                        attr['data-html'] = 'true';
+                        attr['data-content'] = '<div class="loader"></div>';
+                        attr['data-title'] = prop.formattedtitle
+                            + `<i class="bi bi-x-circle-fill iv-ml-auto popover-dismiss cursor-pointer"
+                                     style="font-size:1.5em;"></i>`;
+                    }
+
+                    wrapper.attr(attr);
 
                     wrapper.popover({
                         container: '#wrapper',
@@ -978,7 +997,7 @@ export default class InlineAnnotation extends Base {
                                     }
                                     break;
                                 case 'hotspot':
-                                    var viewertype = wrapper.data('toggle');
+                                    var viewertype = wrapper.data('toggle') || wrapper.data('bs-toggle');
                                     var hotspotid = wrapper.data('item');
                                     var hotspot = items.find(x => x.id == hotspotid);
                                     if (viewertype == 'modal') {
@@ -989,10 +1008,11 @@ export default class InlineAnnotation extends Base {
                                 aria-labelledby="annotation-modal"
                              aria-hidden="true" data-backdrop="static" data-keyboard="false">
                              <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
-                                <div class="modal-content rounded-lg">
-                                    <div class="modal-header d-flex align-items-center shadow-sm pr-0" id="title">
+                                <div class="modal-content iv-rounded-lg">
+                                    <div class="modal-header d-flex align-items-center shadow-sm iv-iv-pr-0" id="title">
                                         <h5 class="modal-title text-truncate mb-0">${title}</h5>
-                                        <button class="btn mx-2 p-0 close" aria-label="Close" data-dismiss="modal">
+                                        <button class="btn mx-2 p-0 close" aria-label="Close"
+                                         data${self.isBS5 ? '-bs' : ''}-dismiss="modal">
                                             <i class="bi bi-x-lg fa-fw" style="font-size: x-large;"></i>
                                         </button>
                                     </div>

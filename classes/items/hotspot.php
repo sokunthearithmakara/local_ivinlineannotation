@@ -122,7 +122,7 @@ class hotspot extends \core_form\dynamic_form {
             'text',
             'color',
             get_string('color', 'local_ivinlineannotation') .
-                '<span class="color-picker ml-2" style="background-color: ' .
+                '<span class="color-picker iv-ml-2" style="background-color: ' .
                 $this->optional_param('color', '#fff', PARAM_TEXT) .
                 '"><input type="color"></span>',
             ['size' => 100]

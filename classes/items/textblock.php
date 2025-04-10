@@ -177,7 +177,7 @@ class textblock extends \core_form\dynamic_form {
             'text',
             'textcolor',
             get_string('textcolor', 'local_ivinlineannotation') .
-                '<span class="color-picker ml-2" style="background-color: '
+                '<span class="color-picker iv-ml-2" style="background-color: '
                 . $this->optional_param('textcolor', '#fff', PARAM_TEXT) .
                 '"><input type="color"></span>',
             ['size' => 100]
@@ -209,7 +209,7 @@ class textblock extends \core_form\dynamic_form {
             'text',
             'bgcolor',
             get_string('bgcolor', 'local_ivinlineannotation') .
-                '<span class="color-picker ml-2" style="background-color: ' .
+                '<span class="color-picker iv-ml-2" style="background-color: ' .
                 $this->optional_param('bgcolor', 'rgba(0,0,0,0.3)', PARAM_TEXT) .
                 '"><input type="color"></span>',
             ['size' => 100]
@@ -218,7 +218,7 @@ class textblock extends \core_form\dynamic_form {
         $mform->setDefault('bgcolor', 'rgba(0,0,0,0.3)');
 
         $mform->addElement('text', 'bordercolor', get_string('bordercolor', 'local_ivinlineannotation') .
-            '<span class="color-picker ml-2" style="background-color: ' .
+            '<span class="color-picker iv-ml-2" style="background-color: ' .
             $this->optional_param('bordercolor', 'transparent', PARAM_TEXT) .
             '"><input type="color"></span>', ['size' => 100]);
         $mform->setType('bordercolor', PARAM_TEXT);
