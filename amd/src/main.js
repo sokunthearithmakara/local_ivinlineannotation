@@ -1005,8 +1005,9 @@ export default class InlineAnnotation extends Base {
                                         let content = hotspot.properties.content.text;
                                         let url = hotspot.properties.url;
                                         let modal = `<div class="modal fade" id="annotation-modal" role="dialog"
-                                aria-labelledby="annotation-modal"
-                             aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                                         aria-labelledby="annotation-modal"
+                                         aria-hidden="true" data${self.isBS5 ? '-bs' : ''}-backdrop="static"
+                                          data${self.isBS5 ? '-bs' : ''}-keyboard="false">
                              <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
                                 <div class="modal-content iv-rounded-lg">
                                     <div class="modal-header d-flex align-items-center shadow-sm iv-iv-pr-0" id="title">
