@@ -56,7 +56,7 @@ export default class InlineAnnotation extends Base {
         const videoWrapper = $('#video-wrapper');
         videoWrapper.find('#canvas').remove();
         videoWrapper.append(`<div id="canvas" data-id="${annotation.id}"
-             class="message text-white bg-transparent inlineannotation position-absolute"></div>`);
+             class="message text-white bg-transparent inlineannotation position-absolute" tabindex="0"></div>`);
 
         const updateAspectRatio = async(video, reset) => {
             let elem = video ? $('#player') : $(`#canvas[data-id='${annotation.id}']`);
@@ -401,7 +401,7 @@ export default class InlineAnnotation extends Base {
                     }, 100);
                 }
 
-                $(document).one('iv:playerSeek iv:playerPlaying', function() {
+                $(document).one('iv:playerSeek iv:playerPlay', function() {
                     if (media) {
                         media.pause();
                     }
@@ -1175,10 +1175,11 @@ export default class InlineAnnotation extends Base {
             self.enableColorPicker();
         }
 
-        $(document).one('iv:playerSeek iv:playerPlaying', function(e) {
+        $(document).one('iv:playerSeek iv:playerPlay', function(e) {
             if (seeking) {
                 return;
             }
+            $('body').removeClass('disablekb');
             let newTime = e.detail.time;
             if (Math.floor(newTime) != annotation.timestamp) {
                 $(`#inlineannotation-btns`).remove();
@@ -1354,12 +1355,14 @@ export default class InlineAnnotation extends Base {
                         function() {
                             $(`#inlineannotation-btns`).remove();
                             $('#canvas[data-id="' + annotation.id + '"]').remove();
+                            $('body').removeClass('disablekb');
                         }
                     );
                 } else {
                     $(`#inlineannotation-btns`).remove();
                     $('#canvas[data-id="' + annotation.id + '"]').remove();
                     $('#content-region, #timeline-wrapper').removeClass('no-pointer-events');
+                    $('body').removeClass('disablekb');
                 }
             });
 
@@ -1982,5 +1985,7 @@ export default class InlineAnnotation extends Base {
         }
         let content = self.cache[annotation.id];
         this.postContentRender(annotation, content);
+        document.querySelector('#canvas').focus();
+        $('body').addClass('disablekb');
     }
 }
