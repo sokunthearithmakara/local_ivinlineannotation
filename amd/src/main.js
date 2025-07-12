@@ -102,9 +102,13 @@ export default class InlineAnnotation extends Base {
         updateAspectRatio(true);
 
         let vwrapper = document.querySelector('#video-wrapper');
+        let resizeTimeout;
         let resizeObserver = new ResizeObserver(() => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
             updateAspectRatio();
             updateAspectRatio(true);
+            }, 100);
         });
 
         resizeObserver.observe(vwrapper);
@@ -203,6 +207,7 @@ export default class InlineAnnotation extends Base {
         let self = this;
         let $videoWrapper = $('#video-wrapper');
         let $playerWrapper = $('#wrapper');
+        let $canvas = $('#canvas');
         let draftStatus = null;
         let seeking = false;
         /**
@@ -317,7 +322,7 @@ export default class InlineAnnotation extends Base {
             }
             wrapper.css(position);
             wrapper.css('height', 'auto');
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
         };
 
         const renderVideo = (wrapper, item, prop, id, position) => {
@@ -342,7 +347,7 @@ export default class InlineAnnotation extends Base {
                 wrapper.find('.playpause').removeClass('bi-pause-fill').addClass('bi-play-fill');
             };
             wrapper.css(position);
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
             recalculatingSize(wrapper);
         };
 
@@ -411,7 +416,7 @@ export default class InlineAnnotation extends Base {
             position.width = 0;
 
             wrapper.css(position);
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
             recalculatingTextSize(wrapper, true);
         };
 
@@ -426,7 +431,7 @@ export default class InlineAnnotation extends Base {
             position.width = 0;
             wrapper.attr('data-timestamp', timestamp);
             wrapper.css(position);
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
             recalculatingTextSize(wrapper, true);
         };
 
@@ -503,7 +508,7 @@ export default class InlineAnnotation extends Base {
             position.width = 0;
 
             wrapper.css(position);
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
             recalculatingTextSize(wrapper, true);
         };
 
@@ -550,7 +555,7 @@ export default class InlineAnnotation extends Base {
                 wrapper.addClass('clickable');
             }
             wrapper.find('.annotation-content').css(style);
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
             recalculatingTextSize(wrapper, false, true);
         };
 
@@ -591,7 +596,7 @@ export default class InlineAnnotation extends Base {
                 style['border-radius'] = prop.rounded == '1' ? '1em' : '0';
             }
             wrapper.find('.annotation-content').css(style);
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
         };
 
         const renderHotspot = (wrapper, item, prop, id, position) => {
@@ -606,7 +611,7 @@ export default class InlineAnnotation extends Base {
                 'aspect-ratio': '1',
             };
             wrapper.find('.annotation-content').css(style);
-            $videoWrapper.find(`#canvas`).append(wrapper);
+            $canvas.append(wrapper);
 
             if (!self.isEditMode()) {
                 if (prop.usemodal == '1') {
@@ -673,13 +678,13 @@ export default class InlineAnnotation extends Base {
 
         const renderItems = (elements, actives, update) => {
             if (!update) { // Clear the canvas if it is a new start.
-                $videoWrapper.find(`#canvas`).empty();
+                $canvas.empty();
             }
 
             if (elements.length == 0) {
                 if (actives) {
                     actives.forEach((active) => {
-                        $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${active}"]`).addClass('active');
+                        $canvas.find(`.annotation-wrapper[data-item="${active}"]`).addClass('active');
                     });
                 }
             } else {
@@ -744,7 +749,7 @@ export default class InlineAnnotation extends Base {
 
                     count++;
                     if (count == elements.length) {
-                        $videoWrapper.find(`#canvas .annotation-wrapper.resizable`).draggable({
+                        $canvas.find('.annotation-wrapper.resizable').draggable({
                             containment: "#canvas",
                             cursor: "move",
                             grid: [1, 1],
@@ -754,13 +759,13 @@ export default class InlineAnnotation extends Base {
                                 if (!$(this).hasClass('active')) {
                                     $(this).trigger('click');
                                 }
-                                let $selected = $videoWrapper.find('#canvas .annotation-wrapper.active');
+                                let $selected = $canvas.find('.annotation-wrapper.active');
                                 $selected.each(function() {
                                     $(this).data('startPosition', $(this).position());
                                 });
                             },
                             drag: function(event, ui) {
-                                let $selected = $videoWrapper.find('#canvas .annotation-wrapper.active');
+                                let $selected = $canvas.find('.annotation-wrapper.active');
                                 let left = ui.originalPosition.left - ui.position.left;
                                 let top = ui.originalPosition.top - ui.position.top;
                                 let positions = $selected.map(function() {
@@ -778,7 +783,7 @@ export default class InlineAnnotation extends Base {
                                     positions.sort((a, b) => a.left - b.left);
                                     let onLeft = positions.find(x => x.left < 0);
                                     let id = onLeft.id;
-                                    let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
+                                    let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                     target.css('left', 0);
                                     let distance = target.data('startPosition').left;
                                     ui.position.left = ui.originalPosition.left - distance;
@@ -789,30 +794,32 @@ export default class InlineAnnotation extends Base {
                                     positions.sort((a, b) => a.top - b.top);
                                     let onTop = positions.find(x => x.top < 0);
                                     let id = onTop.id;
-                                    let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
+                                    let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                     target.css('top', 0);
                                     let distance = target.data('startPosition').top;
                                     ui.position.top = ui.originalPosition.top - distance;
                                     top = ui.originalPosition.top - ui.position.top;
                                 }
 
-                                if (positions.find(x => x.right > $('#canvas').width())) {
+                                let canvasWidth = $canvas.width();
+                                let canvasHeight = $canvas.height();
+                                if (positions.find(x => x.right > canvasWidth)) {
                                     positions.sort((a, b) => a.right - b.right);
-                                    let onRight = positions.find(x => x.right > $('#canvas').width());
+                                    let onRight = positions.find(x => x.right > $canvas.width());
                                     let id = onRight.id;
-                                    let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
-                                    target.css('left', ($('#canvas').width() - target.width() - 1) + 'px');
+                                    let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
+                                    target.css('left', (canvasWidth - target.width() - 1) + 'px');
                                     let distance = target.data('startPosition').left - target.position().left;
                                     ui.position.left = ui.originalPosition.left - distance;
                                     left = ui.originalPosition.left - ui.position.left;
                                 }
 
-                                if (positions.find(x => x.bottom > $('#canvas').height())) {
+                                if (positions.find(x => x.bottom > canvasHeight)) {
                                     positions.sort((a, b) => a.bottom - b.bottom);
-                                    let onBottom = positions.find(x => x.bottom > $('#canvas').height());
+                                    let onBottom = positions.find(x => x.bottom > canvasHeight);
                                     let id = onBottom.id;
-                                    let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
-                                    target.css('top', ($('#canvas').height() - target.height() - 1) + 'px');
+                                    let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
+                                    target.css('top', (canvasHeight - target.height() - 1) + 'px');
                                     let distance = target.data('startPosition').top - target.position().top;
                                     ui.position.top = ui.originalPosition.top - distance;
                                     top = ui.originalPosition.top - ui.position.top;
@@ -830,14 +837,15 @@ export default class InlineAnnotation extends Base {
                             },
                             stop: function() {
                                 if (self.isEditMode()) {
-                                    let $selected = $videoWrapper.find('#canvas .annotation-wrapper.active');
+                                    let $selected = $canvas.find('.annotation-wrapper.active');
                                     let positions = $selected.map(function() {
+                                        let thisPosition = $(this).position();
                                         return {
                                             id: $(this).data('item'),
-                                            left: $(this).position().left,
-                                            top: $(this).position().top,
-                                            bottom: $(this).position().top + $(this).height(),
-                                            right: $(this).position().left + $(this).width(),
+                                            left: thisPosition.left,
+                                            top: thisPosition.top,
+                                            bottom: thisPosition.top + $(this).height(),
+                                            right: thisPosition.left + $(this).width(),
                                         };
                                     }).get();
 
@@ -845,7 +853,7 @@ export default class InlineAnnotation extends Base {
                                         positions.sort((a, b) => a.left - b.left);
                                         let onLeft = positions.find(x => x.left < 0);
                                         let id = onLeft.id;
-                                        let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
+                                        let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                         target.css('left', 0);
                                         let distance = target.data('startPosition').left;
                                         $selected.each(function() {
@@ -860,7 +868,7 @@ export default class InlineAnnotation extends Base {
                                         positions.sort((a, b) => a.top - b.top);
                                         let onTop = positions.find(x => x.top < 0);
                                         let id = onTop.id;
-                                        let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
+                                        let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                         target.css('top', 0);
                                         let distance = target.data('startPosition').top;
                                         $selected.each(function() {
@@ -871,12 +879,14 @@ export default class InlineAnnotation extends Base {
                                         });
                                     }
 
-                                    if (positions.find(x => x.right > $('#canvas').width())) {
+                                    let canvasWidth = $canvas.width();
+                                    let canvasHeight = $canvas.height();
+                                    if (positions.find(x => x.right > canvasWidth)) {
                                         positions.sort((a, b) => a.right - b.right);
-                                        let onRight = positions.find(x => x.right > $('#canvas').width());
+                                        let onRight = positions.find(x => x.right > canvasWidth);
                                         let id = onRight.id;
-                                        let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
-                                        target.css('left', ($('#canvas').width() - target.width() - 1) + 'px');
+                                        let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
+                                        target.css('left', (canvasWidth - target.width() - 1) + 'px');
                                         let distance = target.data('startPosition').left - target.position().left;
                                         $selected.each(function() {
                                             let $this = $(this);
@@ -886,12 +896,12 @@ export default class InlineAnnotation extends Base {
                                         });
                                     }
 
-                                    if (positions.find(x => x.bottom > $('#canvas').height())) {
+                                    if (positions.find(x => x.bottom > canvasHeight)) {
                                         positions.sort((a, b) => a.bottom - b.bottom);
-                                        let onBottom = positions.find(x => x.bottom > $('#canvas').height());
+                                        let onBottom = positions.find(x => x.bottom > canvasHeight);
                                         let id = onBottom.id;
-                                        let target = $videoWrapper.find(`#canvas .annotation-wrapper[data-item="${id}"]`);
-                                        target.css('top', ($('#canvas').height() - target.height() - 1) + 'px');
+                                        let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
+                                        target.css('top', (canvasHeight - target.height() - 1) + 'px');
                                         let distance = target.data('startPosition').top - target.position().top;
                                         $selected.each(function() {
                                             let $this = $(this);
@@ -912,7 +922,7 @@ export default class InlineAnnotation extends Base {
                             }
                         });
 
-                        $videoWrapper.find('#canvas .annotation-wrapper.resizable').resizable({
+                        $canvas.find('.annotation-wrapper.resizable').resizable({
                             containment: "#canvas",
                             handles: "all",
                             grid: [1, 1],
@@ -1059,30 +1069,37 @@ export default class InlineAnnotation extends Base {
 
         // Check resize on video wrapper resize
         let vwrapper = document.querySelector('#video-wrapper');
+        let resizeTimeout;
 
         let resizeObserver = new ResizeObserver(() => {
-            let existingwrapper = $(`#video-wrapper`).find(`#canvas .annotation-wrapper`);
-            if (existingwrapper.length == 0) {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+            let existingwrapper = $canvas.find(`.annotation-wrapper`);
+            if (existingwrapper.length === 0) {
                 return;
             }
             existingwrapper.each(function() {
                 let wrapper = $(this);
                 let type = wrapper.data('type');
-                setTimeout(() => {
-                    if (type == 'textblock'
-                        || type == 'audio' || type == 'stopwatch' || type == 'file' || type == 'navigation') {
-                        recalculatingTextSize(wrapper, type != 'textblock', type == 'textblock');
-                    } else if (type == 'video') {
-                        recalculatingSize(wrapper);
-                        let aspectRatio =
-                            wrapper.find('.annotation-content').width() / wrapper.find('.annotation-content').height();
-                        if (wrapper.width() / wrapper.height() != aspectRatio) {
-                            $(this).height((wrapper.width() / aspectRatio));
-                        }
-                    }
-                }, 100);
-                $('#canvas').css('font-size', $('#canvas').width() / 75 + 'px');
+                if (
+                type === 'textblock' ||
+                type === 'audio' ||
+                type === 'stopwatch' ||
+                type === 'file' ||
+                type === 'navigation'
+                ) {
+                recalculatingTextSize(wrapper, type !== 'textblock', type === 'textblock');
+                } else if (type === 'video') {
+                recalculatingSize(wrapper);
+                let aspectRatio =
+                    wrapper.find('.annotation-content').width() / wrapper.find('.annotation-content').height();
+                if (wrapper.width() / wrapper.height() !== aspectRatio) {
+                    wrapper.height(wrapper.width() / aspectRatio);
+                }
+                }
+                $canvas.css('font-size', $canvas.width() / 75 + 'px');
             });
+            }, 100);
         });
         resizeObserver.observe(vwrapper);
 
@@ -1184,7 +1201,7 @@ export default class InlineAnnotation extends Base {
             if (Math.floor(newTime) != annotation.timestamp) {
                 $(`#inlineannotation-btns`).remove();
                 $('.inlineannotation-popover').remove();
-                $videoWrapper.find(`#canvas`).remove();
+                $canvas.remove();
             }
         });
 
@@ -1194,7 +1211,7 @@ export default class InlineAnnotation extends Base {
             if (!self.isEditMode()) {
                 self.player.play();
             } else {
-                $videoWrapper.find('#canvas .annotation-wrapper').removeClass('active');
+                $canvas.find('.annotation-wrapper').removeClass('active');
                 $('#inlineannotation-btns .btn').removeClass('active rotatey-360');
                 $('#edit-btns').attr('data-active', '').addClass('d-none').removeClass('d-flex');
             }
@@ -1285,7 +1302,7 @@ export default class InlineAnnotation extends Base {
          */
         const getItems = (updateid) => {
             let newItems = [];
-            $videoWrapper.find(`#canvas .annotation-wrapper`).each(function(index, element) {
+            $canvas.find(`.annotation-wrapper`).each(function(index, element) {
                 const id = $(element).data('item');
                 let item = {
                     "type": $(element).data('type'),
@@ -1308,7 +1325,7 @@ export default class InlineAnnotation extends Base {
             getItems(false);
             // Encode html tags
             let cleanItems = JSON.stringify(items).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            let updateId = $videoWrapper.find('#canvas').data('id');
+            let updateId = $canvas.data('id');
             $.ajax({
                 url: M.cfg.wwwroot + '/mod/interactivevideo/ajax.php',
                 method: "POST",
@@ -1428,7 +1445,7 @@ export default class InlineAnnotation extends Base {
         $playerWrapper.off('click', `#inlineannotation-btns .add-ia`).on('click', `#inlineannotation-btns .add-ia`, function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            let annoid = $videoWrapper.find(`#canvas`).data('id');
+            let annoid = $canvas.data('id');
             let type = $(this).attr('data-mediatype');
             if (type == 'stopwatch' && items.find(x => x.type == 'stopwatch')) {
                 self.addNotification(M.util.get_string('onlyonestopwatch', 'local_ivinlineannotation'), 'danger');
@@ -1504,7 +1521,7 @@ export default class InlineAnnotation extends Base {
         $playerWrapper.off('click', `#inlineannotation-btns #edit`).on('click', `#inlineannotation-btns #edit`, function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            let annnoid = $videoWrapper.find(`#canvas`).data('id');
+            let annnoid = $canvas.data('id');
             let active = $('#edit-btns').attr('data-active');
             getItems(false);
             let item = items.find(x => x.id == active);
@@ -1567,11 +1584,11 @@ export default class InlineAnnotation extends Base {
             });
         });
 
-        $videoWrapper.off('click', `#canvas .annotation-wrapper`).on('click', `#canvas .annotation-wrapper`, function(e) {
+        $canvas.off('click', `.annotation-wrapper`).on('click', `.annotation-wrapper`, function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
             if (!e.ctrlKey && !e.metaKey) {
-                $videoWrapper.find('#canvas .annotation-wrapper').removeClass('active');
+                $canvas.find('.annotation-wrapper').removeClass('active');
                 $(this).addClass('active');
                 this.focus();
                 recalculatingSize($(this));
@@ -1586,12 +1603,12 @@ export default class InlineAnnotation extends Base {
 
             if (!isNaN(Number($(this).data('group')))) {
                 let group = $(this).data('group');
-                $videoWrapper.find(`#canvas .annotation-wrapper[data-group="${group}"]`).addClass('active');
+                $canvas.find(`.annotation-wrapper[data-group="${group}"]`).addClass('active');
             }
 
             recalculatingSize($(this));
 
-            let activewrapper = $videoWrapper.find('#canvas .annotation-wrapper.active');
+            let activewrapper = $canvas.find('.annotation-wrapper.active');
             if (activewrapper.length == 0) {
                 $('#edit-btns').attr('data-active', '').addClass('d-none').removeClass('d-flex');
                 $('#inlineannotation-btns #edit').attr('disabled', 'disabled');
@@ -1638,7 +1655,7 @@ export default class InlineAnnotation extends Base {
             }
         });
 
-        $videoWrapper.off('dblclick', '#canvas .annotation-wrapper').on('dblclick', '#canvas .annotation-wrapper', function(e) {
+        $canvas.off('dblclick', '.annotation-wrapper').on('dblclick', '.annotation-wrapper', function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
             $(this).trigger('click');
@@ -1731,12 +1748,12 @@ export default class InlineAnnotation extends Base {
             $(this).attr('disabled', 'disabled').addClass('d-none');
             $('#inlineannotation-btns #ungroup').removeAttr('disabled').removeClass('d-none');
             getItems(false);
-            let active = $('#canvas .annotation-wrapper.active').map(function() {
+            let active = $canvas.find('.annotation-wrapper.active').map(function() {
                 return $(this).data('item');
             }).get();
             const group = new Date().getTime();
             active.forEach((item, i) => {
-                let activeItem = $(`#canvas .annotation-wrapper[data-item="${item}"]`);
+                let activeItem = $canvas.find(`.annotation-wrapper[data-item="${item}"]`);
                 let targetIndex = items.findIndex(x => x.id == item);
                 let target = JSON.parse(JSON.stringify(items[targetIndex]));
                 target.position.group = group;
@@ -1756,11 +1773,11 @@ export default class InlineAnnotation extends Base {
             $(this).attr('disabled', 'disabled').addClass('d-none');
             $(`#inlineannotation-btns #group`).removeAttr('disabled').removeClass('d-none');
             getItems(false);
-            let active = $('#canvas .annotation-wrapper.active').map(function() {
+            let active = $canvas.find('.annotation-wrapper.active').map(function() {
                 return $(this).data('item');
             }).get();
             active.forEach((item, i) => {
-                let activeItem = $(`#canvas .annotation-wrapper[data-item="${item}"]`);
+                let activeItem = $canvas.find(`.annotation-wrapper[data-item="${item}"]`);
                 let targetIndex = items.findIndex(x => x.id == item);
                 let target = JSON.parse(JSON.stringify(items[targetIndex]));
                 delete target.position.group;
@@ -1836,7 +1853,7 @@ export default class InlineAnnotation extends Base {
             let active = $('#edit-btns').attr('data-active');
             active = active.split(',');
             active.forEach((item) => {
-                let activeItem = $(`#canvas .annotation-wrapper[data-item="${item}"]`);
+                let activeItem = $canvas.find(`.annotation-wrapper[data-item="${item}"]`);
                 activeItem.remove();
                 $('#edit-btns').attr('data-active', '').addClass('d-none').removeClass('d-flex');
             });
@@ -1856,7 +1873,7 @@ export default class InlineAnnotation extends Base {
             let newItems = [];
             for (let i = 0; i < active.length; i++) {
                 let a = active[i];
-                let activeItem = $(`#canvas .annotation-wrapper[data-item="${a}"]`);
+                let activeItem = $canvas.find(`.annotation-wrapper[data-item="${a}"]`);
                 activeItem.removeClass('active');
                 const item = items.find(x => x.id == a);
                 let newItem = JSON.parse(JSON.stringify(item));
@@ -1887,7 +1904,7 @@ export default class InlineAnnotation extends Base {
             active = active.split(',');
             for (let i = 0; i < active.length; i++) {
                 let a = active[i];
-                let activeItem = $(`#canvas .annotation-wrapper[data-item="${a}"]`);
+                let activeItem = $canvas.find(`.annotation-wrapper[data-item="${a}"]`);
                 if (activeItem != undefined) {
                     let position = activeItem.position();
                     position['z-index'] = parseInt(activeItem.css('z-index'));
@@ -1904,7 +1921,7 @@ export default class InlineAnnotation extends Base {
                             }
                             break;
                         case 'ArrowDown':
-                            if (position.top + activeItem.outerHeight() < $videoWrapper.find(`#canvas`).height()) {
+                            if (position.top + activeItem.outerHeight() < $canvas.height()) {
                                 position.top = position.top + step;
                                 saveTracking(active);
                             }
@@ -1916,7 +1933,7 @@ export default class InlineAnnotation extends Base {
                             }
                             break;
                         case 'ArrowRight':
-                            if (position.left + activeItem.outerWidth() < $videoWrapper.find(`#canvas`).width()) {
+                            if (position.left + activeItem.outerWidth() < $canvas.width()) {
                                 position.left = position.left + step;
                                 saveTracking(active);
                             }
@@ -1940,7 +1957,7 @@ export default class InlineAnnotation extends Base {
 
         $(document).on('annotationdeleted', function(e) {
             let deleted = e.originalEvent.detail.annotation;
-            let annoid = $videoWrapper.find(`#canvas`).data('id');
+            let annoid = $canvas.data('id');
             if (annoid == deleted.id) {
                 $videoWrapper.find(`#canvas[data-id='${annoid}']`).remove();
                 $(`#inlineannotation-btns`).remove();
