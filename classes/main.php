@@ -42,6 +42,7 @@ class main extends \ivplugin_richtext\main {
             'author' => 'tsmakara',
             'authorlink' => 'mailto:sokunthearithmakara@gmail.com',
             'tutorial' => get_string('tutorialurl', 'local_ivinlineannotation'),
+            'preloadstrings' => false,
         ];
     }
 
@@ -107,4 +108,3 @@ class main extends \ivplugin_richtext\main {
         ]);
     }
 }
-
