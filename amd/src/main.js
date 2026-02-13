@@ -136,7 +136,7 @@ export default class InlineAnnotation extends Base {
             e.preventDefault();
             const $this = $(this);
             const currenttime = await self.player.getCurrentTime();
-            const field = $(this).data('field');
+            const field = $(this).attr('data-field');
             const fieldval = $(`[name=${field}]`).val();
             if (fieldval) {
                 const parts = fieldval.split(':');
@@ -188,7 +188,7 @@ export default class InlineAnnotation extends Base {
         // Reset time button.
         $(document).off('click', `.resettime button`).on('click', `.resettime button`, function(e) {
             e.preventDefault();
-            const field = $(this).data('field');
+            const field = $(this).attr('data-field');
             $(`[name=${field}]`).val('');
             if (options.required) {
                 $(`[name=${field}]`).val(self.convertSecondsToHMS(self.start, false, true));
@@ -250,7 +250,7 @@ export default class InlineAnnotation extends Base {
             let l = self.roundToTwo(elem.position().left) / message.width() * 100;
             l = l < 0 ? 0 : l;
             let z = elem.css('z-index');
-            let g = elem.data('group');
+            let g = elem.attr('data-group');
             let position = {
                 'width': w + '%',
                 'height': h + '%',
@@ -451,10 +451,10 @@ export default class InlineAnnotation extends Base {
             const intervalfunction = function() {
                 timer = setInterval(() => {
                     $(`.annotation-content#${id}`).addClass('running');
-                    let time = $(`.annotation-content#${id}`).data('duration');
+                    let time = $(`.annotation-content#${id}`).attr('data-duration');
                     time--;
                     $(`.annotation-content#${id} span`).text(convertSecondsToMMSS(time));
-                    $(`.annotation-content#${id}`).data('duration', time);
+                    $(`.annotation-content#${id}`).attr('data-duration', time);
                     if (prop.playalarmsound.playsoundatinterval == '1'
                         && time % (prop.playalarmsound.intervaltime * 60) == 0) {
                         if (prop.playalarmsound.playsoundatend == 1) {
@@ -476,7 +476,7 @@ export default class InlineAnnotation extends Base {
                         }
                         $(`.annotation-content#${id}`).removeClass('running');
                         $(`.annotation-content#${id} span`).text(convertSecondsToMMSS(duration));
-                        $(`.annotation-content#${id}`).data('duration', duration);
+                        $(`.annotation-content#${id}`).attr('data-duration', duration);
                     }
                 }, 1000);
             };
@@ -495,7 +495,7 @@ export default class InlineAnnotation extends Base {
                         } else {
                             intervalfunction();
                         }
-                    } else if ($(this).data('duration') == duration) {
+                    } else if ($(this).attr('data-duration') == duration) {
                         intervalfunction();
                     }
                 });
@@ -761,7 +761,7 @@ export default class InlineAnnotation extends Base {
                                 }
                                 let $selected = $canvas.find('.annotation-wrapper.active');
                                 $selected.each(function() {
-                                    $(this).data('startPosition', $(this).position());
+                                    $(this).attr('data-startPosition', $(this).position());
                                 });
                             },
                             drag: function(event, ui) {
@@ -770,7 +770,7 @@ export default class InlineAnnotation extends Base {
                                 let top = ui.originalPosition.top - ui.position.top;
                                 let positions = $selected.map(function() {
                                     return {
-                                        id: $(this).data('item'),
+                                        id: $(this).attr('data-item'),
                                         left: $(this).position().left,
                                         top: $(this).position().top,
                                         bottom: $(this).position().top + $(this).height(),
@@ -785,7 +785,7 @@ export default class InlineAnnotation extends Base {
                                     let id = onLeft.id;
                                     let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                     target.css('left', 0);
-                                    let distance = target.data('startPosition').left;
+                                    let distance = target.attr('data-startPosition').left;
                                     ui.position.left = ui.originalPosition.left - distance;
                                     left = ui.originalPosition.left - ui.position.left;
                                 }
@@ -796,7 +796,7 @@ export default class InlineAnnotation extends Base {
                                     let id = onTop.id;
                                     let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                     target.css('top', 0);
-                                    let distance = target.data('startPosition').top;
+                                    let distance = target.attr('data-startPosition').top;
                                     ui.position.top = ui.originalPosition.top - distance;
                                     top = ui.originalPosition.top - ui.position.top;
                                 }
@@ -809,7 +809,7 @@ export default class InlineAnnotation extends Base {
                                     let id = onRight.id;
                                     let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                     target.css('left', (canvasWidth - target.width() - 1) + 'px');
-                                    let distance = target.data('startPosition').left - target.position().left;
+                                    let distance = target.attr('data-startPosition').left - target.position().left;
                                     ui.position.left = ui.originalPosition.left - distance;
                                     left = ui.originalPosition.left - ui.position.left;
                                 }
@@ -820,14 +820,14 @@ export default class InlineAnnotation extends Base {
                                     let id = onBottom.id;
                                     let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                     target.css('top', (canvasHeight - target.height() - 1) + 'px');
-                                    let distance = target.data('startPosition').top - target.position().top;
+                                    let distance = target.attr('data-startPosition').top - target.position().top;
                                     ui.position.top = ui.originalPosition.top - distance;
                                     top = ui.originalPosition.top - ui.position.top;
                                 }
 
                                 $selected.not(this).each(function() {
                                     let $this = $(this);
-                                    const position = $this.data('startPosition');
+                                    const position = $this.attr('data-startPosition');
                                     $this.css({
                                         left: (position.left - left) + 'px',
                                         top: (position.top - top) + 'px',
@@ -841,7 +841,7 @@ export default class InlineAnnotation extends Base {
                                     let positions = $selected.map(function() {
                                         let thisPosition = $(this).position();
                                         return {
-                                            id: $(this).data('item'),
+                                            id: $(this).attr('data-item'),
                                             left: thisPosition.left,
                                             top: thisPosition.top,
                                             bottom: thisPosition.top + $(this).height(),
@@ -855,10 +855,10 @@ export default class InlineAnnotation extends Base {
                                         let id = onLeft.id;
                                         let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                         target.css('left', 0);
-                                        let distance = target.data('startPosition').left;
+                                        let distance = target.attr('data-startPosition').left;
                                         $selected.each(function() {
                                             let $this = $(this);
-                                            let position = $this.data('startPosition');
+                                            let position = $this.attr('data-startPosition');
                                             let newLeft = position.left - distance;
                                             $this.css('left', newLeft + 'px');
                                         });
@@ -870,10 +870,10 @@ export default class InlineAnnotation extends Base {
                                         let id = onTop.id;
                                         let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                         target.css('top', 0);
-                                        let distance = target.data('startPosition').top;
+                                        let distance = target.attr('data-startPosition').top;
                                         $selected.each(function() {
                                             let $this = $(this);
-                                            let position = $this.data('startPosition');
+                                            let position = $this.attr('data-startPosition');
                                             let newTop = position.top - distance;
                                             $this.css('top', newTop + 'px');
                                         });
@@ -887,10 +887,10 @@ export default class InlineAnnotation extends Base {
                                         let id = onRight.id;
                                         let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                         target.css('left', (canvasWidth - target.width() - 1) + 'px');
-                                        let distance = target.data('startPosition').left - target.position().left;
+                                        let distance = target.attr('data-startPosition').left - target.position().left;
                                         $selected.each(function() {
                                             let $this = $(this);
-                                            let position = $this.data('startPosition');
+                                            let position = $this.attr('data-startPosition');
                                             let newLeft = position.left - distance;
                                             $this.css('left', newLeft + 'px');
                                         });
@@ -902,10 +902,10 @@ export default class InlineAnnotation extends Base {
                                         let id = onBottom.id;
                                         let target = $canvas.find(`.annotation-wrapper[data-item="${id}"]`);
                                         target.css('top', (canvasHeight - target.height() - 1) + 'px');
-                                        let distance = target.data('startPosition').top - target.position().top;
+                                        let distance = target.attr('data-startPosition').top - target.position().top;
                                         $selected.each(function() {
                                             let $this = $(this);
-                                            let position = $this.data('startPosition');
+                                            let position = $this.attr('data-startPosition');
                                             let newTop = position.top - distance;
                                             $this.css('top', newTop + 'px');
                                         });
@@ -914,7 +914,7 @@ export default class InlineAnnotation extends Base {
                                     getItems(false);
                                     updatePositionInfo($(this));
                                     $selected = $selected.map(function() {
-                                        return $(this).data('item');
+                                        return $(this).attr('data-item');
                                     }).get();
 
                                     saveTracking($selected);
@@ -930,7 +930,7 @@ export default class InlineAnnotation extends Base {
                             minWidth: 1,
                             resize: function(event) {
                                 if (self.isEditMode()) {
-                                    let type = $(this).data('type');
+                                    let type = $(this).attr('data-type');
                                     if (type == 'file' || type == 'audio' || type == 'stopwatch' || type == 'navigation'
                                         || type == 'textblock') {
                                         recalculatingTextSize($(this), type != 'textblock', type == 'textblock');
@@ -942,7 +942,7 @@ export default class InlineAnnotation extends Base {
                             },
                             stop: function() {
                                 if (self.isEditMode()) {
-                                    let type = $(this).data('type');
+                                    let type = $(this).attr('data-type');
                                     if (type == 'file' || type == 'navigation' || type == 'textblock') {
                                         recalculatingTextSize($(this), type != 'textblock', type == 'textblock');
                                     } else if (type == 'shape') {
@@ -950,7 +950,7 @@ export default class InlineAnnotation extends Base {
                                     }
                                     recalculatingSize($(this));
                                     getItems(false);
-                                    saveTracking([$(this).data('item')]);
+                                    saveTracking([$(this).attr('data-item')]);
                                     $(this).trigger('click');
                                 }
                             }
@@ -996,7 +996,7 @@ export default class InlineAnnotation extends Base {
                         function(e) {
                             e.stopImmediatePropagation();
                             let wrapper = $(this);
-                            let type = wrapper.data('type');
+                            let type = wrapper.attr('data-type');
                             switch (type) {
                                 case 'video':
                                     var video = wrapper.find('video')[0];
@@ -1007,8 +1007,8 @@ export default class InlineAnnotation extends Base {
                                     }
                                     break;
                                 case 'hotspot':
-                                    var viewertype = wrapper.data('toggle') || wrapper.data('bs-toggle');
-                                    var hotspotid = wrapper.data('item');
+                                    var viewertype = wrapper.attr('data-toggle') || wrapper.attr('data-bs-toggle');
+                                    var hotspotid = wrapper.attr('data-item');
                                     var hotspot = items.find(x => x.id == hotspotid);
                                     if (viewertype == 'modal') {
                                         let title = hotspot.properties.formattedtitle;
@@ -1053,8 +1053,8 @@ export default class InlineAnnotation extends Base {
                                     }
                                     break;
                             }
-                            if ($(this).data('timestamp')) {
-                                self.player.seek($(this).data('timestamp'));
+                            if ($(this).attr('data-timestamp')) {
+                                self.player.seek($(this).attr('data-timestamp'));
                                 self.player.play();
                             }
                         });
@@ -1080,7 +1080,7 @@ export default class InlineAnnotation extends Base {
             }
             existingwrapper.each(function() {
                 let wrapper = $(this);
-                let type = wrapper.data('type');
+                let type = wrapper.attr('data-type');
                 if (
                 type === 'textblock' ||
                 type === 'audio' ||
@@ -1303,9 +1303,9 @@ export default class InlineAnnotation extends Base {
         const getItems = (updateid) => {
             let newItems = [];
             $canvas.find(`.annotation-wrapper`).each(function(index, element) {
-                const id = $(element).data('item');
+                const id = $(element).attr('data-item');
                 let item = {
-                    "type": $(element).data('type'),
+                    "type": $(element).attr('data-type'),
                     "position": recalculatingSize($(element)),
                 };
                 item.id = id;
@@ -1325,7 +1325,7 @@ export default class InlineAnnotation extends Base {
             getItems(false);
             // Encode html tags
             let cleanItems = JSON.stringify(items).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            let updateId = $canvas.data('id');
+            let updateId = $canvas.attr('data-id');
             $.ajax({
                 url: M.cfg.wwwroot + '/mod/interactivevideo/ajax.php',
                 method: "POST",
@@ -1445,7 +1445,7 @@ export default class InlineAnnotation extends Base {
         $playerWrapper.off('click', `#inlineannotation-btns .add-ia`).on('click', `#inlineannotation-btns .add-ia`, function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            let annoid = $canvas.data('id');
+            let annoid = $canvas.attr('data-id');
             let type = $(this).attr('data-mediatype');
             if (type == 'stopwatch' && items.find(x => x.type == 'stopwatch')) {
                 self.addNotification(M.util.get_string('onlyonestopwatch', 'local_ivinlineannotation'), 'danger');
@@ -1521,7 +1521,7 @@ export default class InlineAnnotation extends Base {
         $playerWrapper.off('click', `#inlineannotation-btns #edit`).on('click', `#inlineannotation-btns #edit`, function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            let annnoid = $canvas.data('id');
+            let annnoid = $canvas.attr('data-id');
             let active = $('#edit-btns').attr('data-active');
             getItems(false);
             let item = items.find(x => x.id == active);
@@ -1601,8 +1601,8 @@ export default class InlineAnnotation extends Base {
                 }
             }
 
-            if (!isNaN(Number($(this).data('group')))) {
-                let group = $(this).data('group');
+            if (!isNaN(Number($(this).attr('data-group')))) {
+                let group = $(this).attr('data-group');
                 $canvas.find(`.annotation-wrapper[data-group="${group}"]`).addClass('active');
             }
 
@@ -1615,7 +1615,7 @@ export default class InlineAnnotation extends Base {
                 $('#inlineannotation-btns #edit').removeAttr('disabled');
             } else {
                 let dataActive = activewrapper.map(function() {
-                    return $(this).data('item');
+                    return $(this).attr('data-item');
                 }).get();
                 $('#edit-btns').attr('data-active', dataActive).addClass('d-flex').removeClass('d-none');
                 if (activewrapper.length > 1) {
@@ -1629,10 +1629,10 @@ export default class InlineAnnotation extends Base {
 
             // Enable ungroup button if the active items are grouped.
             let grouping = activewrapper.map(function() {
-                if (isNaN($(this).data('group')) || $(this).data('group') == '') {
+                if (isNaN($(this).attr('data-group')) || $(this).attr('data-group') == '') {
                     return '';
                 }
-                return $(this).data('group');
+                return $(this).attr('data-group');
             }).get();
 
             grouping = [...new Set(grouping)];
@@ -1749,7 +1749,7 @@ export default class InlineAnnotation extends Base {
             $('#inlineannotation-btns #ungroup').removeAttr('disabled').removeClass('d-none');
             getItems(false);
             let active = $canvas.find('.annotation-wrapper.active').map(function() {
-                return $(this).data('item');
+                return $(this).attr('data-item');
             }).get();
             const group = new Date().getTime();
             active.forEach((item, i) => {
@@ -1774,7 +1774,7 @@ export default class InlineAnnotation extends Base {
             $(`#inlineannotation-btns #group`).removeAttr('disabled').removeClass('d-none');
             getItems(false);
             let active = $canvas.find('.annotation-wrapper.active').map(function() {
-                return $(this).data('item');
+                return $(this).attr('data-item');
             }).get();
             active.forEach((item, i) => {
                 let activeItem = $canvas.find(`.annotation-wrapper[data-item="${item}"]`);
@@ -1957,7 +1957,7 @@ export default class InlineAnnotation extends Base {
 
         $(document).on('annotationdeleted', function(e) {
             let deleted = e.originalEvent.detail.annotation;
-            let annoid = $canvas.data('id');
+            let annoid = $canvas.attr('data-id');
             if (annoid == deleted.id) {
                 $videoWrapper.find(`#canvas[data-id='${annoid}']`).remove();
                 $(`#inlineannotation-btns`).remove();

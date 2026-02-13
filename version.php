@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component    = 'local_ivinlineannotation';
-$plugin->release      = '1.2';
-$plugin->version      = 2026011600;
+$plugin->release      = '1.3';
+$plugin->version      = 2026021400;
 $plugin->requires     = 2021112800;
 $plugin->supported    = [400, 501];
 $plugin->maturity     = MATURITY_STABLE;
