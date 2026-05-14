@@ -67,6 +67,9 @@ class hotspot extends \core_form\dynamic_form {
      */
     public function definition() {
         $mform = $this->_form;
+        $attributes = $mform->getAttributes();
+        $attributes['data-name'] = 'interaction-form';
+        $mform->setAttributes($attributes);
         $mform->addElement('hidden', 'contextid', null);
         $mform->setType('contextid', PARAM_INT);
         $mform->addElement('hidden', 'id', 0);
@@ -175,4 +178,3 @@ class hotspot extends \core_form\dynamic_form {
         ]);
     }
 }
-

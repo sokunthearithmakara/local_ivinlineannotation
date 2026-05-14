@@ -1197,8 +1197,8 @@ export default class InlineAnnotation extends Base {
                 return;
             }
             $('body').removeClass('disablekb');
-            let newTime = e.detail.time;
-            if (Math.floor(newTime) != annotation.timestamp) {
+            let newTime = e.detail?.time;
+            if (!self.isEditMode() || (newTime && Math.floor(newTime) != annotation.timestamp)) {
                 $(`#inlineannotation-btns`).remove();
                 $('.inlineannotation-popover').remove();
                 $canvas.remove();

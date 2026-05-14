@@ -130,6 +130,9 @@ class media extends \core_form\dynamic_form {
     public function definition() {
         global $PAGE;
         $mform = $this->_form;
+        $attributes = $mform->getAttributes();
+        $attributes['data-name'] = 'interaction-form';
+        $mform->setAttributes($attributes);
         $mform->addElement('hidden', 'contextid', null);
         $mform->setType('contextid', PARAM_INT);
         $mform->addElement('hidden', 'id', 0);
