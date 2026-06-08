@@ -120,5 +120,3 @@ $string['video'] = 'Video';
 $string['videofile'] = 'Video file';
 $string['warning'] = 'Warning';
 $string['warningoutline'] = 'Warning outline';
-
-

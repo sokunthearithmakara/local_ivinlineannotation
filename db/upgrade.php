@@ -38,6 +38,9 @@ function xmldb_local_ivinlineannotation_upgrade($oldversion) {
                 SET content = REPLACE(content, '\"timestamp\":\"00:00:00\"', '\"timestamp\":\"\"')
                 WHERE type = 'inlineannotation'";
         $DB->execute($sql);
+
+        // Inlineannotation savepoint reached.
+        upgrade_plugin_savepoint(true, 2025021000, 'local_ivinlineannotation');
     }
     return true;
 }
