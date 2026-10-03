@@ -100,8 +100,10 @@ class stopwatch extends \core_form\dynamic_form {
         $mform->setAttributes($attributes);
         $mform->addElement('hidden', 'contextid', null);
         $mform->setType('contextid', PARAM_INT);
+
         $mform->addElement('hidden', 'id', 0);
         $mform->setType('id', PARAM_INT);
+
         $mform->addElement('hidden', 'annotationid', 0);
         $mform->setType('annotationid', PARAM_INT);
 
@@ -111,6 +113,7 @@ class stopwatch extends \core_form\dynamic_form {
         $mform->addRule('duration', get_string('numeric', 'mod_interactivevideo'), 'numeric', null, 'client');
         $mform->addRule('duration', get_string('nonzero', 'mod_interactivevideo'), 'nonzero', null, 'client');
         $mform->setDefault('duration', 1);
+
         $mform->addElement(
             'advcheckbox',
             'allowpause',
@@ -119,6 +122,8 @@ class stopwatch extends \core_form\dynamic_form {
             null,
             [0, 1]
         );
+        $mform->setType('allowpause', PARAM_INT);
+
         $mform->addElement('select', 'style', get_string('style', 'local_ivinlineannotation'), [
             'btn-danger' => get_string('danger', 'local_ivinlineannotation'),
             'btn-warning' => get_string('warning', 'local_ivinlineannotation'),
@@ -138,6 +143,7 @@ class stopwatch extends \core_form\dynamic_form {
             'btn-outline-dark' => get_string('darkoutline', 'local_ivinlineannotation'),
             'btn-transparent' => get_string('transparent', 'local_ivinlineannotation'),
         ]);
+        $mform->setType('style', PARAM_TEXT);
 
         $elementarray = [];
         $elementarray[] = $mform->createElement(
@@ -148,6 +154,7 @@ class stopwatch extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
+        $mform->setType('rounded', PARAM_INT);
 
         $elementarray[] = $mform->createElement(
             'advcheckbox',
@@ -157,6 +164,7 @@ class stopwatch extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
+        $mform->setType('shadow', PARAM_INT);
 
         $mform->addGroup($elementarray, '', '');
 
@@ -169,6 +177,7 @@ class stopwatch extends \core_form\dynamic_form {
             null,
             [0, 1]
         );
+        $mform->setType('playalarmsound[playsoundatend]', PARAM_INT);
         $mform->setDefault(
             'playalarmsound[playsoundatend]',
             $this->optional_param('playalarmsound[playsoundatend]', 1, PARAM_INT)
@@ -181,6 +190,7 @@ class stopwatch extends \core_form\dynamic_form {
             null,
             [0, 1]
         );
+        $mform->setType('playalarmsound[playsoundatinterval]', PARAM_INT);
         $mform->setDefault(
             'playalarmsound[playsoundatinterval]',
             $this->optional_param('playalarmsound[playsoundatinterval]', 1, PARAM_INT)
@@ -191,7 +201,7 @@ class stopwatch extends \core_form\dynamic_form {
             get_string('numberofminutes', 'local_ivinlineannotation'),
             ['size' => 5]
         );
-        $mform->setType('intervaltime', PARAM_INT);
+        $mform->setType('playalarmsound[intervaltime]', PARAM_INT);
         $mform->setDefault('playalarmsound[intervaltime]', $this->optional_param('playalarmsound[intervaltime]', 1, PARAM_INT));
 
         $mform->addGroup($intervalelem, 'playalarmsound', get_string('playalarmsound', 'local_ivinlineannotation'));

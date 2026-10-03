@@ -124,6 +124,7 @@ class navigation extends \core_form\dynamic_form {
             'btn-outline-dark' => get_string('darkoutline', 'local_ivinlineannotation'),
             'btn-transparent' => get_string('transparent', 'local_ivinlineannotation'),
         ]);
+        $mform->setType('style', PARAM_TEXT);
 
         $elementarray = [];
         $elementarray[] = $mform->createElement(
@@ -134,7 +135,7 @@ class navigation extends \core_form\dynamic_form {
             ["group" => 1],
             [0, 1]
         );
-
+        $mform->setType('rounded', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'shadow',
@@ -143,7 +144,7 @@ class navigation extends \core_form\dynamic_form {
             ["group" => 1],
             [0, 1]
         );
-
+        $mform->setType('shadow', PARAM_INT);
         $mform->addGroup($elementarray, '', '');
 
         $this->set_display_vertical();

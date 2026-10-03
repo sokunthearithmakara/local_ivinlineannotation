@@ -95,7 +95,7 @@ class text extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
-
+        $mform->setType('bold', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'italic',
@@ -104,7 +104,7 @@ class text extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
-
+        $mform->setType('italic', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'underline',
@@ -113,7 +113,7 @@ class text extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
-
+        $mform->setType('underline', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'shadow',
@@ -122,11 +122,11 @@ class text extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
-
+        $mform->setType('shadow', PARAM_INT);
         $mform->addGroup($elementarray, '', '');
 
         $mform->addElement('text', 'url', get_string('url', 'local_ivinlineannotation'), ['size' => 100]);
-        $mform->setType('text', PARAM_URL);
+        $mform->setType('url', PARAM_URL);
         $mform->addRule(
             'url',
             get_string('invalidurlformat', 'local_ivinlineannotation'),
@@ -177,7 +177,7 @@ class text extends \core_form\dynamic_form {
         $mform->setDefault('borderwidth', 1);
 
         $mform->addElement('hidden', 'resizable', 0);
-
+        $mform->setType('resizable', PARAM_INT);
         $this->set_display_vertical();
     }
 

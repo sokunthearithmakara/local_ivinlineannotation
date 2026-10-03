@@ -72,7 +72,7 @@ class media extends \core_form\dynamic_form {
             file_copy_file_to_file_area($url, $filename, $newdraftitemid);
         }
 
-        $data->media = $newdraftitemid;
+        $data->media = isset($newdraftitemid) ? $newdraftitemid : null;
         $data->style = $this->optional_param('style', null, PARAM_TEXT);
         $data->rounded = $this->optional_param('rounded', 0, PARAM_INT);
         $data->autoplay = $this->optional_param('autoplay', 0, PARAM_INT);
@@ -120,7 +120,7 @@ class media extends \core_form\dynamic_form {
             }
         }
         $fromform->formattedalttext = format_string($fromform->alttext);
-        $fromform->formattedlabel = format_string($fromform->label);
+        $fromform->formattedlabel = format_string(isset($fromform->label) ? $fromform->label : '');
         return $fromform;
     }
 
@@ -157,6 +157,7 @@ class media extends \core_form\dynamic_form {
         }
 
         $mform->addElement('hidden', 'type', $type);
+        $mform->setType('type', PARAM_TEXT);
 
         $mform->addElement('text', 'label', get_string('label', 'local_ivinlineannotation'), ['size' => 100]);
         $mform->setType('label', PARAM_TEXT);
@@ -170,6 +171,7 @@ class media extends \core_form\dynamic_form {
             $filemanageroptions
         );
         $mform->addRule('media', get_string('required'), 'required', null, 'client');
+        $mform->setType('media', PARAM_INT);
 
         $mform->addElement('select', 'style', get_string('style', 'local_ivinlineannotation'), [
             'btn-danger' => get_string('danger', 'local_ivinlineannotation'),
@@ -192,6 +194,7 @@ class media extends \core_form\dynamic_form {
         ]);
         $mform->setDefault('style', 'btn-primary');
         $mform->hideIf('style', 'type', 'in', ['video', 'image']);
+        $mform->setType('style', PARAM_TEXT);
 
         $elementarray = [];
         $elementarray[] = $mform->createElement(
@@ -202,7 +205,7 @@ class media extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
-
+        $mform->setType('rounded', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'shadow',
@@ -211,7 +214,7 @@ class media extends \core_form\dynamic_form {
             ['group' => 1],
             [0, 1]
         );
-
+        $mform->setType('shadow', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'resizable',
@@ -222,7 +225,7 @@ class media extends \core_form\dynamic_form {
         );
         $mform->hideIf('resizable', 'type', 'eq', 'audio');
         $mform->hideIf('resizable', 'type', 'eq', 'file');
-
+        $mform->setType('resizable', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'autoplay',
@@ -233,7 +236,7 @@ class media extends \core_form\dynamic_form {
         );
         $mform->hideIf('autoplay', 'type', 'eq', 'image');
         $mform->hideIf('autoplay', 'type', 'eq', 'file');
-
+        $mform->setType('autoplay', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'showcontrol',
@@ -243,13 +246,13 @@ class media extends \core_form\dynamic_form {
             [0, 1]
         );
         $mform->hideIf('showcontrol', 'type', 'neq', 'video');
-
+        $mform->setType('showcontrol', PARAM_INT);
         $mform->addGroup($elementarray, '', '');
 
         $mform->addElement('text', 'alttext', get_string('alttext', 'local_ivinlineannotation'), ['size' => 100]);
         $mform->setType('alttext', PARAM_TEXT);
         $mform->hideIf('alttext', 'type', 'neq', 'image');
-
+        $mform->setType('alttext', PARAM_TEXT);
         $mform->addElement('text', 'gotourl', get_string('gotourl', 'local_ivinlineannotation'), ['size' => 100]);
         $mform->setType('gotourl', PARAM_URL);
         $mform->addRule(
@@ -260,7 +263,7 @@ class media extends \core_form\dynamic_form {
             'client'
         );
         $mform->hideIf('gotourl', 'type', 'neq', 'image');
-
+        $mform->setType('gotourl', PARAM_URL);
         $element = [];
         $element[] = $mform->createElement(
             'text',
@@ -286,7 +289,7 @@ class media extends \core_form\dynamic_form {
         ]);
         $mform->addGroup($element, 'timestampgroup', get_string('gototimestamp', 'local_ivannotation'), '', false);
         $mform->hideIf('timestampgroup', 'type', 'neq', 'image');
-
+        $mform->setType('timestamp', PARAM_TEXT);
         $this->set_display_vertical();
     }
 

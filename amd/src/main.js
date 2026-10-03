@@ -1373,6 +1373,7 @@ export default class InlineAnnotation extends Base {
                             $(`#inlineannotation-btns`).remove();
                             $('#canvas[data-id="' + annotation.id + '"]').remove();
                             $('body').removeClass('disablekb');
+                            $('#content-region, #timeline-wrapper').removeClass('no-pointer-events');
                         }
                     );
                 } else {

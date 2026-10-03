@@ -95,7 +95,7 @@ class shape extends \core_form\dynamic_form {
             [0, 1]
         );
         $mform->disabledIf('rounded', 'shape', 'neq', 'rectangle');
-
+        $mform->setType('rounded', PARAM_INT);
         $elementarray[] = $mform->createElement(
             'advcheckbox',
             'shadow',
@@ -104,7 +104,7 @@ class shape extends \core_form\dynamic_form {
             ["group" => 1],
             [0, 1]
         );
-
+        $mform->setType('shadow', PARAM_INT);
         $mform->addGroup($elementarray, '', '');
 
         $mform->addElement('text', 'gotourl', get_string('gotourl', 'local_ivinlineannotation'), ['size' => 100]);
@@ -185,7 +185,7 @@ class shape extends \core_form\dynamic_form {
         $mform->setDefault('opacity', 100);
 
         $mform->addElement('hidden', 'resizable', 0);
-
+        $mform->setType('resizable', PARAM_INT);
         $this->set_display_vertical();
     }
 

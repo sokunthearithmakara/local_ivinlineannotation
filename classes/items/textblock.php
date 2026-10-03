@@ -140,9 +140,10 @@ class textblock extends \core_form\dynamic_form {
             'center' => get_string('center', 'local_ivinlineannotation'),
             'right' => get_string('right', 'local_ivinlineannotation'),
         ]);
+        $mform->setType('alignment', PARAM_TEXT);
 
         $mform->addElement('text', 'url', get_string('url', 'local_ivinlineannotation'), ['size' => 100]);
-        $mform->setType('text', PARAM_URL);
+        $mform->setType('url', PARAM_URL);
         $mform->addRule(
             'url',
             get_string('invalidurlformat', 'local_ivinlineannotation'),
@@ -235,6 +236,7 @@ class textblock extends \core_form\dynamic_form {
         $mform->setDefault('borderwidth', 1);
 
         $mform->addElement('hidden', 'resizable', 0);
+        $mform->setType('resizable', PARAM_INT);
 
         $this->set_display_vertical();
     }

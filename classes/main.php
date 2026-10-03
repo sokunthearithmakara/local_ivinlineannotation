@@ -57,7 +57,7 @@ class main extends \ivplugin_richtext\main {
         $content = $arg["content"];
         $id = $arg["id"];
         $contextid = $arg["contextid"];
-        $editmode = $arg["editmode"];
+        $editmode = isset($arg["editmode"]) ? $arg["editmode"] : false;
         // Process the content from editor for displaying.
         require_once($CFG->libdir . '/filelib.php');
         if ($editmode) {
@@ -74,7 +74,6 @@ class main extends \ivplugin_richtext\main {
                     'maxbytes' => 0,
                     'trusttext' => true,
                     'noclean' => true,
-                    'context' => $context,
                 ],
                 $content
             );
@@ -103,7 +102,7 @@ class main extends \ivplugin_richtext\main {
             $content = json_encode($items);
         }
         return json_encode([
-            'draftitemid' => $draftitemid,
+            'draftitemid' => isset($draftitemid) ? $draftitemid : null,
             'items' => $content,
         ]);
     }
