@@ -25,6 +25,7 @@
  */
 import $ from 'jquery';
 import Base from 'mod_interactivevideo/type/base';
+import {play as playSound, stop as stopSound, duration as soundDuration} from 'mod_interactivevideo/sound';
 import ModalForm from 'core_form/modalform';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
@@ -357,13 +358,13 @@ export default class InlineAnnotation extends Base {
             if (type == 'audio') {
                 wrapperhtml = `<span id="${id}" tabindex="0"
                              class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'iv-rounded-0'}
-                              annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''} rotatex-360"
+                              annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''}"
                                data-src="${prop.url}"><i class="bi bi-volume-up fs-unset" style="margin-right:0.25em;"></i>
                                <span class="timeremaining">00:00</span></span>`;
             } else if (type == 'file') {
                 wrapperhtml = `<a id="${id}"
                              class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'iv-rounded-0'}
-                             annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''} rotatey-180" href="${prop.url}"
+                             annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''}" href="${prop.url}"
                               target="_blank"><i class="bi bi-paperclip fs-unset"></i>${prop.formattedlabel != "" ?
                         `<span style="margin-left:0.25em;">${prop.formattedlabel}` : ''}</a>`;
             }
@@ -439,16 +440,19 @@ export default class InlineAnnotation extends Base {
             const duration = Number(prop.duration) * 60;
             wrapper.append(`<div class="d-flex h-100"><span id="${id}" tabindex="0"
                              class="btn ${prop.style} ${prop.rounded == '1' ? 'btn-rounded' : 'iv-rounded-0'}
-                              annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''} rotatey-180"
+                              annotation-content text-nowrap ${prop.shadow == '1' ? 'shadow' : ''}"
                                data-duration="${duration}">
                                <i class="bi bi bi-stopwatch fs-unset" style="margin-right:0.25em;"></i>
                                <span>${convertSecondsToMMSS(duration)}</span></span></div>`);
 
-            let timer, alarm;
+            let timer;
             if (timer) {
                 clearInterval(timer);
             }
             const intervalfunction = function() {
+                // A restart silences the last run's alarm.
+                stopSound('alarm');
+                $(`.annotation-content#${id}`).removeClass('pulse');
                 timer = setInterval(() => {
                     $(`.annotation-content#${id}`).addClass('running');
                     let time = $(`.annotation-content#${id}`).attr('data-duration');
@@ -458,21 +462,18 @@ export default class InlineAnnotation extends Base {
                     if (prop.playalarmsound.playsoundatinterval == '1'
                         && time % (prop.playalarmsound.intervaltime * 60) == 0) {
                         if (prop.playalarmsound.playsoundatend == 1) {
-                            alarm = new Audio(M.cfg.wwwroot + '/mod/interactivevideo/sounds/short-alarm.mp3');
-                            alarm.play();
+                            playSound('shortalarm');
                         }
                     }
                     if (time < 0) {
                         clearInterval(timer);
                         if (prop.playalarmsound.playsoundatend == 1) {
-                            alarm = new Audio(M.cfg.wwwroot + '/mod/interactivevideo/sounds/alarm.mp3');
-                            alarm.play();
-                            alarm.onplay = function() {
-                                $(`.annotation-content#${id}`).addClass('pulse');
-                            };
-                            alarm.onended = function() {
+                            playSound('alarm');
+                            // Pulse while the alarm sounds.
+                            $(`.annotation-content#${id}`).addClass('pulse');
+                            setTimeout(() => {
                                 $(`.annotation-content#${id}`).removeClass('pulse');
-                            };
+                            }, soundDuration('alarm'));
                         }
                         $(`.annotation-content#${id}`).removeClass('running');
                         $(`.annotation-content#${id} span`).text(convertSecondsToMMSS(duration));
@@ -488,9 +489,7 @@ export default class InlineAnnotation extends Base {
                     if (prop.allowpause == 1) {
                         if ($(this).hasClass('running')) {
                             clearInterval(timer);
-                            if (alarm) {
-                                alarm.pause();
-                            }
+                            stopSound('shortalarm');
                             $(this).removeClass('running');
                         } else {
                             intervalfunction();
@@ -658,7 +657,7 @@ export default class InlineAnnotation extends Base {
                                      <h3 class="popover-header d-flex justify-content-between"></h3>
                                      <div class="popover-body rounded"></div>${prop.url != '' ?
                                 `<div class="popup-footer bg-light p-2 rounded-bottom"><a href="${prop.url}"
-                                          class="d-block w-100 text-right rotatex-360" target="_blank">
+                                          class="d-block w-100 text-right" target="_blank">
                                           <i class="bi bi-arrow-right"><i></i></i></a></div>` : ''}</div>`,
                     });
 
@@ -1031,7 +1030,7 @@ export default class InlineAnnotation extends Base {
                                     <div class="loader"></div>
                                     </div>
                                     ${url != '' ? `<div class="modal-footer bg-light p-2 rounded-bottom">
-                                        <a href="${url}" class="d-block w-100 text-right rotatex-360" target="_blank">
+                                        <a href="${url}" class="d-block w-100 text-right" target="_blank">
                                         <i class="bi bi-arrow-right"><i></i></i></a></div>` : ''}
                                     </div>
                                 </div>
@@ -1212,7 +1211,7 @@ export default class InlineAnnotation extends Base {
                 self.player.play();
             } else {
                 $canvas.find('.annotation-wrapper').removeClass('active');
-                $('#inlineannotation-btns .btn').removeClass('active rotatey-360');
+                $('#inlineannotation-btns .btn').removeClass('active');
                 $('#edit-btns').attr('data-active', '').addClass('d-none').removeClass('d-flex');
             }
         });

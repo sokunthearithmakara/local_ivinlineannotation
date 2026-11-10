@@ -26,11 +26,11 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component    = 'local_ivinlineannotation';
 $plugin->release      = '1.5';
-$plugin->version      = 2026100100;
+$plugin->version      = 2026110300;
 $plugin->requires     = 2021112800;
 $plugin->supported    = [401, 503];
 $plugin->maturity     = MATURITY_STABLE;
 $plugin->dependencies = [
-    'mod_interactivevideo' => 2026100100,
+    'mod_interactivevideo' => 2026110300,
     'ivplugin_richtext' => 2024071500,
 ];
